@@ -43,6 +43,7 @@ finbot/
 Known initial datasets include:
 
 - `market/daily_bars/historical.parquet`
+- `ratios/ratios.parquet`
 - `reference/tickers.parquet`
 - `reference/ticker_details.parquet`
 - `reference/related_tickers.parquet`

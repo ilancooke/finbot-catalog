@@ -52,6 +52,44 @@ def test_successful_catalog_build(tmp_path: Path) -> None:
     assert json.loads(row["parquet_columns"]) == ["symbol", "date", "close"]
 
 
+def test_catalog_includes_ratios_dataset(tmp_path: Path) -> None:
+    _write_dataset(
+        tmp_path / "ratios",
+        "ratios",
+        metadata={
+            "provider": "massive",
+            "dataset": "ratios",
+            "mode": "replace",
+            "collected_at_utc": "2026-05-08T10:00:00Z",
+            "rows": 2,
+            "tickers": 2,
+            "data_min_date": "2026-05-06",
+            "data_max_date": "2026-05-07",
+            "parquet_file": "ratios.parquet",
+        },
+        dataframe=pd.DataFrame(
+            {
+                "ticker": ["AAPL", "MSFT"],
+                "date": ["2026-05-07", "2026-05-07"],
+                "price_to_earnings": [34.44, 24.96],
+            }
+        ),
+    )
+
+    result = build_catalog(tmp_path, now=NOW)
+
+    row = result.dataframe.iloc[0].to_dict()
+    assert row["dataset_name"] == "ratios.ratios"
+    assert row["dataset_group"] == "ratios"
+    assert row["provider"] == "massive"
+    assert row["row_count"] == 2
+    assert row["symbol_count"] == 2
+    assert row["data_min_date"] == "2026-05-06"
+    assert row["data_max_date"] == "2026-05-07"
+    assert row["status"] == "fresh"
+    assert json.loads(row["parquet_columns"]) == ["ticker", "date", "price_to_earnings"]
+
+
 def test_missing_metadata(tmp_path: Path) -> None:
     dataset_dir = tmp_path / "reference"
     dataset_dir.mkdir(parents=True)
