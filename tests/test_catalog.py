@@ -6,10 +6,29 @@ from pathlib import Path
 
 import pandas as pd
 
-from finbot_catalog.catalog import build_catalog
+from finbot_catalog.catalog import build_catalog, default_data_root
 
 
 NOW = datetime(2026, 5, 8, 12, 0, tzinfo=UTC)
+
+
+def test_default_data_root_reads_dotenv(tmp_path: Path, monkeypatch) -> None:
+    dotenv_data_root = tmp_path / "shared_data"
+    (tmp_path / ".env").write_text(f"FINBOT_DATA_ROOT={dotenv_data_root}\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("FINBOT_DATA_ROOT", raising=False)
+
+    assert default_data_root() == dotenv_data_root
+
+
+def test_default_data_root_prefers_environment_over_dotenv(tmp_path: Path, monkeypatch) -> None:
+    dotenv_data_root = tmp_path / "dotenv_data"
+    env_data_root = tmp_path / "env_data"
+    (tmp_path / ".env").write_text(f"FINBOT_DATA_ROOT={dotenv_data_root}\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("FINBOT_DATA_ROOT", str(env_data_root))
+
+    assert default_data_root() == env_data_root
 
 
 def test_successful_catalog_build(tmp_path: Path) -> None:

@@ -1,6 +1,6 @@
 # finbot-catalog
 
-`finbot-catalog` builds a lightweight metadata catalog for datasets produced by `finbot-data`.
+`finbot-catalog` builds a lightweight metadata catalog for datasets produced by Finbot data-producing packages such as `finbot-data` and `finbot-features`.
 It scans `FINBOT_DATA_ROOT`, reads sidecar `*.metadata.json` files and matching Parquet
 files, then writes compact catalog outputs for downstream dashboard, modeling, and analysis
 packages.
@@ -30,6 +30,7 @@ finbot/
 │   ├── market/
 │   ├── reference/
 │   ├── features/
+│   ├── labels/
 │   ├── models/
 │   └── catalog/
 └── repos/
@@ -40,13 +41,17 @@ finbot/
     └── finbot-dashboard/
 ```
 
-Known initial datasets include:
+Known datasets include:
 
 - `market/daily_bars/historical.parquet`
 - `ratios/ratios.parquet`
+- `reference/tickers_all.parquet`
 - `reference/tickers.parquet`
 - `reference/ticker_details.parquet`
 - `reference/related_tickers.parquet`
+- `features/equity_price_features.parquet`
+- `features/equity_relative_features.parquet`
+- `labels/equity_forward_return_labels.parquet`
 
 Each dataset should have a sidecar metadata file such as
 `historical.metadata.json` next to `historical.parquet`.
@@ -60,7 +65,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Run with the default data root from `FINBOT_DATA_ROOT`:
+Run with the default data root from `FINBOT_DATA_ROOT`, read first from the shell environment and then from `.env` in the current working directory:
 
 ```bash
 python scripts/build_catalog.py
@@ -72,7 +77,7 @@ Or pass an explicit data root:
 python scripts/build_catalog.py --data-root /Users/ilan/workspace/finbot/data
 ```
 
-If `FINBOT_DATA_ROOT` is not set, the command falls back to `./data` for local development.
+If `FINBOT_DATA_ROOT` is not set in either place, the command falls back to `./data` for local development.
 
 You can also override the output directory:
 
@@ -107,7 +112,7 @@ Finbot data root.
 
 ## Consuming The Catalog
 
-Future packages should read the catalog outputs from the shared data root rather than scanning
+Downstream packages should read the catalog outputs from the shared data root rather than scanning
 raw datasets themselves:
 
 ```python
