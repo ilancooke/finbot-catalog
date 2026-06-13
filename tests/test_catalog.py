@@ -109,6 +109,65 @@ def test_catalog_includes_ratios_dataset(tmp_path: Path) -> None:
     assert json.loads(row["parquet_columns"]) == ["ticker", "date", "price_to_earnings"]
 
 
+def test_catalog_excludes_research_outputs(tmp_path: Path) -> None:
+    _write_dataset(
+        tmp_path / "research" / "price_strength_scorecard_v1",
+        "equity_price_strength_scorecard_v1_current",
+        metadata={
+            "dataset": "equity_price_strength_scorecard_v1_current",
+            "generated_at_utc": "2026-05-08T10:00:00Z",
+            "rows": 1,
+        },
+        dataframe=pd.DataFrame({"symbol": ["AAPL"], "date": ["2026-05-07"]}),
+    )
+    _write_dataset(
+        tmp_path / "features",
+        "equity_price_features",
+        metadata={
+            "dataset": "equity_price_features",
+            "generated_at_utc": "2026-05-08T10:00:00Z",
+            "rows": 1,
+        },
+        dataframe=pd.DataFrame({"symbol": ["AAPL"], "date": ["2026-05-07"]}),
+    )
+
+    result = build_catalog(tmp_path, now=NOW)
+
+    assert result.dataframe["dataset_name"].tolist() == ["features.equity_price_features"]
+
+
+def test_catalog_includes_signals_and_generated_timestamp(tmp_path: Path) -> None:
+    _write_dataset(
+        tmp_path / "signals" / "price_strength",
+        "scorecard_v1_current",
+        metadata={
+            "dataset": "price_strength_scorecard_v1_current",
+            "dataset_type": "research_derived_signal_snapshot",
+            "generated_at_utc": "2026-05-08T10:00:00Z",
+            "rows": 2,
+            "symbol_count": 2,
+        },
+        dataframe=pd.DataFrame(
+            {
+                "symbol": ["AAPL", "MSFT"],
+                "date": ["2026-05-07", "2026-05-07"],
+                "price_strength_score_v1": [3, 1],
+            }
+        ),
+    )
+
+    result = build_catalog(tmp_path, now=NOW)
+
+    row = result.dataframe.iloc[0].to_dict()
+    assert row["dataset_name"] == "signals.price_strength.scorecard_v1_current"
+    assert row["dataset_group"] == "signals"
+    assert row["collection_timestamp"] == "2026-05-08T10:00:00Z"
+    assert row["row_count"] == 2
+    assert row["symbol_count"] == 2
+    assert row["status"] == "fresh"
+    assert json.loads(row["parquet_columns"]) == ["symbol", "date", "price_strength_score_v1"]
+
+
 def test_missing_metadata(tmp_path: Path) -> None:
     dataset_dir = tmp_path / "reference"
     dataset_dir.mkdir(parents=True)

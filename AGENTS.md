@@ -5,12 +5,18 @@
 `finbot-catalog` is a lightweight metadata catalog builder for the Finbot project.
 It scans `FINBOT_DATA_ROOT`, inspects dataset metadata JSON and Parquet files, and
 writes compact catalog outputs for downstream dashboard, feature, and modeling packages.
+It intentionally excludes exploratory outputs under `FINBOT_DATA_ROOT/research`; promoted
+dashboard-facing datasets should live outside `research`, such as under `features`, `labels`,
+or `signals`.
 
 ## Boundaries
 
 - Keep raw datasets out of this repo.
 - Do not copy or store data files in the repo.
 - Write generated catalog outputs to `FINBOT_DATA_ROOT/catalog`.
+- Exclude `FINBOT_DATA_ROOT/research` from catalog discovery by default.
+- Keep `FINBOT_DATA_ROOT/signals` included for promoted signal snapshots such as
+  `signals/price_strength/scorecard_v1_current.parquet`.
 - Keep this package dependency-light: Python, pandas, pyarrow, pytest.
 - Do not add dashboards, modeling, feature engineering, orchestration, Dagster, DuckDB,
   Streamlit, FastAPI, databases, or services here.

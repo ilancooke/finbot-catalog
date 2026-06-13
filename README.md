@@ -5,9 +5,14 @@ It scans `FINBOT_DATA_ROOT`, reads sidecar `*.metadata.json` files and matching 
 files, then writes compact catalog outputs for downstream dashboard, modeling, and analysis
 packages.
 
+Catalog discovery intentionally excludes `FINBOT_DATA_ROOT/research` so exploratory outputs
+from `finbot-research` do not appear in dashboard-facing catalog records. Promoted datasets
+should be written outside `research`, such as under `features`, `labels`, or `signals`.
+
 ## What This Does
 
 - Finds dataset metadata and Parquet files under the shared Finbot data root.
+- Excludes exploratory research outputs under `FINBOT_DATA_ROOT/research`.
 - Records dataset names, groups, paths, provider metadata, row counts, symbol counts, date
   ranges, Parquet columns, and schema details.
 - Assigns a simple health status: `fresh`, `stale`, `missing`, `partial`, `failed`, or
@@ -20,6 +25,7 @@ packages.
 
 - It does not own or copy raw datasets.
 - It does not build features, train models, run dashboards, or orchestrate pipelines.
+- It does not catalog exploratory research outputs under `research/`.
 - It does not introduce databases, DuckDB, Dagster, Streamlit, FastAPI, or services.
 
 ## Expected Layout
@@ -31,6 +37,8 @@ finbot/
 │   ├── reference/
 │   ├── features/
 │   ├── labels/
+│   ├── signals/
+│   ├── research/      # intentionally excluded from catalog discovery
 │   ├── models/
 │   └── catalog/
 └── repos/
@@ -52,9 +60,12 @@ Known datasets include:
 - `features/equity_price_features.parquet`
 - `features/equity_relative_features.parquet`
 - `labels/equity_forward_return_labels.parquet`
+- `signals/price_strength/scorecard_v1_current.parquet`
 
 Each dataset should have a sidecar metadata file such as
 `historical.metadata.json` next to `historical.parquet`.
+Metadata timestamps may use provider collection fields such as `collected_at_utc` or
+derived dataset generation fields such as `generated_at_utc`.
 
 ## Local Usage
 

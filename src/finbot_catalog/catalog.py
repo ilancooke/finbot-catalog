@@ -75,7 +75,7 @@ def discover_datasets(
     """Return catalog records without writing output files."""
 
     data_root = data_root.resolve()
-    ignored_dirs = [data_root / "catalog"]
+    ignored_dirs = [data_root / "catalog", data_root / "research"]
     if exclude_dirs:
         ignored_dirs.extend(exclude_dirs)
     metadata_files = sorted(
@@ -196,7 +196,9 @@ def _build_record(
         "parquet_exists": parquet_exists,
         "provider": _string_or_none(metadata.get("provider")),
         "collection_timestamp": _string_or_none(
-            metadata.get("collected_at_utc") or metadata.get("collected_date_utc")
+            metadata.get("collected_at_utc")
+            or metadata.get("collected_date_utc")
+            or metadata.get("generated_at_utc")
         ),
         "row_count": _first_int(
             metadata.get("rows"),
@@ -333,7 +335,7 @@ def _metadata_indicates_partial(metadata: dict[str, Any]) -> bool:
 
 
 def _metadata_collection_time(metadata: dict[str, Any]) -> datetime | None:
-    for key in ("collected_at_utc", "collection_timestamp", "created_at_utc"):
+    for key in ("collected_at_utc", "collection_timestamp", "created_at_utc", "generated_at_utc"):
         value = metadata.get(key)
         parsed = _parse_datetime(value)
         if parsed is not None:
