@@ -3,8 +3,9 @@
 ## Repo Purpose
 
 `finbot-catalog` is a lightweight metadata catalog builder for the Finbot project.
-It scans `FINBOT_DATA_ROOT`, inspects dataset metadata JSON and Parquet files, and
-writes compact catalog outputs for downstream dashboard, feature, and modeling packages.
+It scans `FINBOT_DATA_ROOT`, inspects dataset metadata JSON and Parquet files,
+registers expected core datasets, and writes compact catalog plus ops/health outputs
+for downstream dashboard, feature, and modeling packages.
 It intentionally excludes exploratory outputs under `FINBOT_DATA_ROOT/research`; promoted
 dashboard-facing datasets should live outside `research`, such as under `features`, `labels`,
 or `signals`.
@@ -58,3 +59,8 @@ docker run --rm -v /path/to/finbot/data:/data finbot-catalog
 - Preserve both outputs:
   - `dataset_catalog.parquet`
   - `dataset_catalog.json`
+- Preserve current-state ops outputs:
+  - `ops_catalog.parquet`
+  - `ops_catalog.json`
+- Keep ops outputs focused on current dataset state and health. Do not add job-run history
+  unless the user explicitly asks for historical run tracking.

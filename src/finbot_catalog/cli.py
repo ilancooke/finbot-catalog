@@ -28,4 +28,6 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Built {len(result.dataframe)} dataset catalog records")
     print(f"Wrote {result.parquet_path}")
     print(f"Wrote {result.json_path}")
+    print(f"Wrote {result.ops_parquet_path}")
+    print(f"Wrote {result.ops_json_path}")
     return 0
